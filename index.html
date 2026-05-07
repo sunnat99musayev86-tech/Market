@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { font-family: sans-serif; background: var(--tg-theme-bg-color, #fff); color: var(--tg-theme-text-color, #000); margin: 0; padding: 20px; }
+        .card { background: var(--tg-theme-secondary-bg-color, #f0f0f0); border-radius: 15px; padding: 15px; margin-bottom: 15px; text-align: center; border: 1px solid rgba(0,0,0,0.1); }
+        .price { color: #e74c3c; font-size: 22px; font-weight: bold; margin: 5px 0; }
+        .old-price { text-decoration: line-through; opacity: 0.5; font-size: 14px; }
+        button { background: var(--tg-theme-button-color, #3390ec); color: var(--tg-theme-button-text-color, #fff); border: none; width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;">🛍️ TV Discount Market</h1>
+    
+    <div class="card">
+        <h3>🥖 Свежая лепёшка</h3>
+        <p class="old-price">4 000 сум</p>
+        <p class="price">1 500 сум</p>
+        <button onclick="tg.sendData('Заказ: Лепёшка')">Забронировать</button>
+    </div>
+
+    <div class="card">
+        <h3>🥛 Молоко 1л</h3>
+        <p class="old-price">12 000 сум</p>
+        <p class="price">4 500 сум</p>
+        <button onclick="tg.sendData('Заказ: Молоко')">Забронировать</button>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand(); // Развернуть на весь экран
+    </script>
+</body>
+</html>
