@@ -5,64 +5,97 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --danger: #ff3b30; --success: #4cd964; --accent: #ff9500; }
-        body { font-family: -apple-system, sans-serif; background: #f0f0f2; margin: 0; padding: 0; color: #1c1c1e; }
-        .header { background: #000; color: #fff; padding: 25px 20px; text-align: center; border-radius: 0 0 20px 20px; }
-        .urgent-badge { background: var(--danger); color: white; padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: bold; animation: blink 1s infinite; }
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        :root { --accent: #ff9500; --tg-bg: var(--tg-theme-bg-color, #ffffff); }
+        body { font-family: -apple-system, sans-serif; background: var(--tg-theme-secondary-bg-color, #f0f0f2); margin: 0; padding: 0; color: var(--tg-theme-text-color, #000); }
+        .header { background: #000; color: #fff; padding: 20px; text-align: center; border-radius: 0 0 20px 20px; sticky; top: 0; z-index: 10; }
         .container { padding: 15px; }
-        .card { background: #fff; border-radius: 18px; padding: 12px; margin-bottom: 15px; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); position: relative; }
-        .img-box { width: 90px; height: 90px; border-radius: 12px; overflow: hidden; background: #eee; flex-shrink: 0; }
+        .card { background: var(--tg-bg); border-radius: 18px; padding: 12px; margin-bottom: 15px; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .img-box { width: 80px; height: 80px; border-radius: 12px; overflow: hidden; background: #eee; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 40px; }
         .img-box img { width: 100%; height: 100%; object-fit: cover; }
         .info { flex: 1; }
         .info h3 { margin: 0; font-size: 16px; }
-        .stock { color: var(--danger); font-size: 12px; font-weight: bold; margin-top: 4px; }
-        .prices { margin-top: 5px; }
-        .price { color: #000; font-size: 19px; font-weight: 800; }
-        .old-price { text-decoration: line-through; color: #8e8e93; font-size: 13px; margin-left: 5px; }
-        button { background: var(--accent); color: #000; border: none; padding: 10px 15px; border-radius: 12px; font-weight: 800; font-size: 14px; box-shadow: 0 4px 8px rgba(255,149,0,0.2); }
+        .stock { color: #ff3b30; font-size: 11px; font-weight: bold; margin-top: 4px; }
+        .price { font-size: 18px; font-weight: 800; color: #4cd964; }
+        button { background: var(--accent); color: white; border: none; padding: 10px 15px; border-radius: 12px; font-weight: bold; transition: 0.3s; min-width: 80px; }
+        button.ordered { background: #4cd964; }
     </style>
 </head>
 <body>
     <div class="header">
-        <span class="urgent-badge">СРОЧНЫЕ СКИДКИ</span>
-        <h1 style="margin: 10px 0 0; font-size: 24px;">TV DISCOUNT</h1>
+        <h1 style="margin: 0; font-size: 20px;">TV DISCOUNT MARKET</h1>
     </div>
 
     <div class="container">
         <div class="card">
-            <div class="img-box"><img src="1.jpg" alt="Лепешка"></div>
+            <div class="img-box"><img src="1.jpg" onerror="this.src='🥖'"></div>
             <div class="info">
                 <h3>Горячая Лепёшка</h3>
                 <div class="stock">Осталось: 8 шт.</div>
-                <div class="prices">
-                    <span class="price">1 500</span><span class="old-price">4 000</span>
-                </div>
+                <div class="price">1 500 сум</div>
             </div>
-            <button onclick="order('Лепешка')">БРОНЬ</button>
+            <button id="btn1" onclick="order('Лепёшка', 'btn1')">БРОНЬ</button>
         </div>
 
         <div class="card">
-            <div class="img-box"><img src="2.jpg" alt="Молоко"></div>
+            <div class="img-box"><img src="2.jpg" onerror="this.src='🥛'"></div>
             <div class="info">
                 <h3>Молоко Мусаффо</h3>
-                <div class="stock">Срок до: завтра!</div>
-                <div class="prices">
-                    <span class="price">4 500</span><span class="old-price">12 500</span>
-                </div>
+                <div class="stock">Срок: до завтра</div>
+                <div class="price">4 500 сум</div>
             </div>
-            <button onclick="order('Молоко')">БРОНЬ</button>
+            <button id="btn2" onclick="order('Молоко', 'btn2')">БРОНЬ</button>
         </div>
 
+        <div class="card">
+            <div class="img-box"><img src="3.jpg" onerror="this.src='🥚'"></div>
+            <div class="info">
+                <h3>Яйца (10 шт)</h3>
+                <div class="stock">Свежий привоз</div>
+                <div class="price">9 000 сум</div>
+            </div>
+            <button id="btn3" onclick="order('Яйца', 'btn3')">БРОНЬ</button>
         </div>
+
+        <div class="card">
+            <div class="img-box"><img src="4.jpg" onerror="this.src='🍚'"></div>
+            <div class="info">
+                <h3>Рис Лазер (1кг)</h3>
+                <div class="stock">Скидка дня</div>
+                <div class="price">16 000 сум</div>
+            </div>
+            <button id="btn4" onclick="order('Рис', 'btn4')">БРОНЬ</button>
+        </div>
+
+        <div class="card">
+            <div class="img-box"><img src="5.jpg" onerror="this.src='🌻'"></div>
+            <div class="info">
+                <h3>Масло (1л)</h3>
+                <div class="stock">Осталось мало</div>
+                <div class="price">13 500 сум</div>
+            </div>
+            <button id="btn5" onclick="order('Масло', 'btn5')">БРОНЬ</button>
+        </div>
+    </div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
-        function order(name) {
+
+        function order(name, btnId) {
+            let btn = document.getElementById(btnId);
+            
+            // 1. Визуальный отклик
+            btn.innerText = "ГОТОВО ✅";
+            btn.classList.add('ordered');
             tg.HapticFeedback.notificationOccurred('success');
-            tg.sendData("СРОЧНЫЙ ЗАКАЗ: " + name);
-            tg.close();
+
+            // 2. Отправка данных боту
+            tg.sendData("ЗАКАЗ: " + name);
+
+            // 3. Закрытие через паузу, чтобы клиент увидел галочку
+            setTimeout(() => {
+                tg.close();
+            }, 1200);
         }
     </script>
 </body>
