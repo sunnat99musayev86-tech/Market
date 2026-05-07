@@ -2,36 +2,160 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: sans-serif; background: var(--tg-theme-bg-color, #fff); color: var(--tg-theme-text-color, #000); margin: 0; padding: 20px; }
-        .card { background: var(--tg-theme-secondary-bg-color, #f0f0f0); border-radius: 15px; padding: 15px; margin-bottom: 15px; text-align: center; border: 1px solid rgba(0,0,0,0.1); }
-        .price { color: #e74c3c; font-size: 22px; font-weight: bold; margin: 5px 0; }
-        .old-price { text-decoration: line-through; opacity: 0.5; font-size: 14px; }
-        button { background: var(--tg-theme-button-color, #3390ec); color: var(--tg-theme-button-text-color, #fff); border: none; width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 16px; }
+        :root {
+            --tg-theme-button-color: #3390ec;
+            --accent-color: #ff9500;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--tg-theme-secondary-bg-color, #f4f4f7);
+            color: var(--tg-theme-text-color, #000);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* Анимированный градиент в шапке */
+        .header {
+            background: linear-gradient(-45deg, #ff9500, #ff5e00, #e67e22, #d35400);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            border-radius: 0 0 25px 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container { padding: 15px; animation: fadeInUp 0.6s ease; }
+
+        /* Карточка товара с эффектом наведения */
+        .card {
+            background: var(--tg-theme-bg-color, #fff);
+            border-radius: 20px;
+            padding: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .card:active { transform: scale(0.96); background: #fafafa; }
+
+        .img-box {
+            width: 80px;
+            height: 80px;
+            background: #f9f9f9;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        .info { flex: 1; }
+        .info h3 { margin: 0 0 5px 0; font-size: 17px; }
+        
+        .prices { display: flex; align-items: baseline; gap: 8px; }
+        .price { color: #2ecc71; font-size: 20px; font-weight: 800; }
+        .old-price { text-decoration: line-through; color: #a1a1a1; font-size: 13px; }
+
+        .btn-add {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(255, 149, 0, 0.2);
+        }
+
+        /* Анимация появления */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .discount-tag {
+            background: #ff3b30;
+            color: white;
+            font-size: 10px;
+            padding: 3px 7px;
+            border-radius: 6px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
     </style>
 </head>
 <body>
-    <h1 style="text-align: center;">🛍️ TV Discount Market</h1>
-    
-    <div class="card">
-        <h3>🥖 Свежая лепёшка</h3>
-        <p class="old-price">4 000 сум</p>
-        <p class="price">1 500 сум</p>
-        <button onclick="tg.sendData('Заказ: Лепёшка')">Забронировать</button>
+
+    <div class="header">
+        <h1 style="margin:0; font-size: 28px;">🔥 ВЫГОДА ТУТ</h1>
+        <p style="margin:5px 0 0; opacity: 0.8;">Самые низкие цены в Ташкенте</p>
     </div>
 
-    <div class="card">
-        <h3>🥛 Молоко 1л</h3>
-        <p class="old-price">12 000 сум</p>
-        <p class="price">4 500 сум</p>
-        <button onclick="tg.sendData('Заказ: Молоко')">Забронировать</button>
+    <div class="container">
+        <div class="card">
+            <div class="img-box">🥖</div>
+            <div class="info">
+                <span class="discount-tag">-60%</span>
+                <h3>Горячая лепёшка</h3>
+                <div class="prices">
+                    <span class="price">1 500</span>
+                    <span class="old-price">4 000 сум</span>
+                </div>
+            </div>
+            <button class="btn-add" onclick="buy('Лепёшку')">БРОНЬ</button>
+        </div>
+
+        <div class="card">
+            <div class="img-box">🥛</div>
+            <div class="info">
+                <span class="discount-tag">-65%</span>
+                <h3>Молоко 1л (Мусаффо)</h3>
+                <div class="prices">
+                    <span class="price">4 500</span>
+                    <span class="old-price">12 000 сум</span>
+                </div>
+            </div>
+            <button class="btn-add" onclick="buy('Молоко')">БРОНЬ</button>
+        </div>
     </div>
 
     <script>
         let tg = window.Telegram.WebApp;
-        tg.expand(); // Развернуть на весь экран
+        tg.expand();
+        tg.headerColor = '#ff9500';
+
+        function buy(product) {
+            // Вибрация телефона (Тактильный отклик)
+            tg.HapticFeedback.notificationOccurred('success');
+            
+            // Показ главного подтверждения снизу
+            tg.MainButton.setText("ПОДТВЕРДИТЬ ЗАКАЗ: " + product);
+            tg.MainButton.show();
+            tg.MainButton.setParams({color: "#2ecc71"});
+        }
+
+        tg.MainButton.onClick(function() {
+            tg.sendData("Новый заказ подтвержден!");
+            tg.close();
+        });
     </script>
 </body>
 </html>
