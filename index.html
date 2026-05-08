@@ -6,99 +6,107 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { --accent: #ff9500; }
-        body { font-family: sans-serif; background: #121212; color: white; margin: 0; padding: 0; padding-bottom: 80px; }
-        .header { background: #000; padding: 20px; text-align: center; border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 100; }
+        body { font-family: -apple-system, sans-serif; background: #000; color: #fff; margin: 0; padding: 0; padding-bottom: 100px; }
+        .header { background: #1a1a1a; padding: 20px; text-align: center; border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 10; }
         .container { padding: 15px; }
-        .card { background: #1e1e1e; border-radius: 16px; padding: 12px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; border: 1px solid #333; }
-        .img-box { width: 80px; height: 80px; border-radius: 12px; background: #2a2a2a; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 35px; }
+        .card { background: #222; border-radius: 20px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; gap: 15px; border: 1px solid #333; transition: 0.3s; }
+        .img-box { width: 80px; height: 80px; background: #333; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 35px; flex-shrink: 0; }
         .img-box img { width: 100%; height: 100%; object-fit: cover; }
         .info { flex: 1; }
-        .info h3 { margin: 0; font-size: 16px; }
-        .price { font-size: 18px; font-weight: bold; color: #4cd964; margin: 5px 0; }
-        .counter { display: flex; align-items: center; gap: 10px; }
-        .btn-count { background: #333; color: white; border: none; width: 30px; height: 30px; border-radius: 8px; font-weight: bold; }
+        .info h3 { margin: 0; font-size: 17px; }
+        .price { color: #4cd964; font-size: 20px; font-weight: bold; margin: 5px 0; }
         
-        /* Кнопка заказа внизу */
-        .cart-footer { position: fixed; bottom: 0; left: 0; right: 0; background: #000; padding: 15px; border-top: 1px solid #333; display: none; }
-        .main-btn { background: var(--accent); color: white; border: none; width: 100%; padding: 15px; border-radius: 12px; font-size: 16px; font-weight: bold; }
+        /* Управление количеством */
+        .controls { display: flex; align-items: center; gap: 15px; margin-top: 10px; }
+        .btn-math { background: var(--accent); color: white; border: none; width: 35px; height: 35px; border-radius: 10px; font-size: 20px; font-weight: bold; }
+        .count { font-size: 18px; font-weight: bold; min-width: 20px; text-align: center; }
+
+        /* Нижняя панель (Корзина) */
+        .footer { position: fixed; bottom: 0; left: 0; right: 0; background: #1a1a1a; padding: 20px; border-top: 1px solid #333; transform: translateY(100%); transition: 0.5s; }
+        .footer.show { transform: translateY(0); }
+        .order-btn { background: var(--accent); color: white; border: none; width: 100%; padding: 15px; border-radius: 15px; font-size: 18px; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="header"><h3>TV DISCOUNT GLOBAL</h3></div>
-    
-    <div class="container" id="catalog">
-        </div>
 
-    <div class="cart-footer" id="cart-footer">
-        <button class="main-btn" onclick="sendOrder()">ЗАКАЗАТЬ: <span id="total">0</span> сум</button>
+<div class="header">
+    <h2 style="margin:0;">TV GLOBAL MARKET</h2>
+</div>
+
+<div class="container" id="list">
     </div>
+
+<div class="footer" id="footer">
+    <button class="order-btn" onclick="finishOrder()">ОФОРМИТЬ: <span id="total">0</span> сум</button>
+</div>
 
 <script>
     let tg = window.Telegram.WebApp;
     tg.expand();
 
-    const products = [
-        { id: 1, name: 'Лепёшка', price: 1500, img: '1.jpg', icon: '🥖' },
-        { id: 2, name: 'Молоко', price: 4500, img: '2.jpg', icon: '🥛' },
-        { id: 3, name: 'Рис Лазер', price: 16000, img: '3.jpg', icon: '🍚' },
-        { id: 4, name: 'Масло 1л', price: 13500, img: '4.jpg', icon: '🌻' },
-        { id: 5, name: 'Яйца 10шт', price: 9000, img: '5.jpg', icon: '🥚' }
+    const items = [
+        { id: 1, name: 'Лепёшка', price: 1500, icon: '🥖' },
+        { id: 2, name: 'Молоко', price: 4500, icon: '🥛' },
+        { id: 3, name: 'Рис Лазер', price: 16000, icon: '🍚' },
+        { id: 4, name: 'Масло 1л', price: 13500, icon: '🌻' },
+        { id: 5, name: 'Яйца 10шт', price: 9000, icon: '🥚' }
     ];
 
     let cart = {};
 
-    function render() {
+    function draw() {
         let html = '';
-        products.forEach(p => {
-            let count = cart[p.id] || 0;
+        items.forEach(item => {
+            let count = cart[item.id] || 0;
             html += `
-                <div class="card">
-                    <div class="img-box"><img src="${p.img}" onerror="this.style.display='none'">${p.icon}</div>
-                    <div class="info">
-                        <h3>${p.name}</h3>
-                        <div class="price">${p.price} сум</div>
-                        <div class="counter">
-                            <button class="btn-count" onclick="updateCart(${p.id}, -1)">-</button>
-                            <span>${count}</span>
-                            <button class="btn-count" onclick="updateCart(${p.id}, 1)">+</button>
-                        </div>
+            <div class="card">
+                <div class="img-box"><img src="${item.id}.jpg" onerror="this.style.display='none'">${item.icon}</div>
+                <div class="info">
+                    <h3>${item.name}</h3>
+                    <div class="price">${item.price} сум</div>
+                    <div class="controls">
+                        <button class="btn-math" onclick="change(${item.id}, -1)">-</button>
+                        <span class="count">${count}</span>
+                        <button class="btn-math" onclick="change(${item.id}, 1)">+</button>
                     </div>
-                </div>`;
+                </div>
+            </div>`;
         });
-        document.getElementById('catalog').innerHTML = html;
+        document.getElementById('list').innerHTML = html;
         updateFooter();
     }
 
-    function updateCart(id, delta) {
-        cart[id] = (cart[id] || 0) + delta;
+    function change(id, val) {
+        cart[id] = (cart[id] || 0) + val;
         if (cart[id] <= 0) delete cart[id];
-        tg.HapticFeedback.impactOccurred('light');
-        render();
+        tg.HapticFeedback.impactOccurred('medium');
+        draw();
     }
 
     function updateFooter() {
-        let total = 0;
-        let hasItems = false;
+        let sum = 0;
+        let has = false;
         for (let id in cart) {
-            let p = products.find(x => x.id == id);
-            total += p.price * cart[id];
-            hasItems = true;
+            let item = items.find(i => i.id == id);
+            sum += item.price * cart[id];
+            has = true;
         }
-        document.getElementById('cart-footer').style.display = hasItems ? 'block' : 'none';
-        document.getElementById('total').innerText = total.toLocaleString();
+        let f = document.getElementById('footer');
+        if (has) f.classList.add('show'); else f.classList.remove('show');
+        document.getElementById('total').innerText = sum.toLocaleString();
     }
 
-    function sendOrder() {
-        let text = "НОВЫЙ ЗАКАЗ:\n";
+    function finishOrder() {
+        let msg = "НОВЫЙ ЗАКАЗ:\n----------\n";
         for (let id in cart) {
-            let p = products.find(x => x.id == id);
-            text += `${p.name} x${cart[id]}\n`;
+            let item = items.find(i => i.id == id);
+            msg += `${item.name} x${cart[id]}\n`;
         }
-        tg.sendData(text);
+        tg.sendData(msg);
         tg.close();
     }
 
-    render();
+    draw();
 </script>
 </body>
 </html>
