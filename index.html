@@ -5,108 +5,87 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --accent: #ff9500; }
-        body { font-family: -apple-system, sans-serif; background: #000; color: #fff; margin: 0; padding: 0; padding-bottom: 100px; }
-        .header { background: #1a1a1a; padding: 20px; text-align: center; border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 10; }
-        .container { padding: 15px; }
-        .card { background: #222; border-radius: 20px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; gap: 15px; border: 1px solid #333; transition: 0.3s; }
-        .img-box { width: 80px; height: 80px; background: #333; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 35px; flex-shrink: 0; }
-        .img-box img { width: 100%; height: 100%; object-fit: cover; }
-        .info { flex: 1; }
-        .info h3 { margin: 0; font-size: 17px; }
-        .price { color: #4cd964; font-size: 20px; font-weight: bold; margin: 5px 0; }
+        body {
+            background: radial-gradient(circle, #2c3e50 0%, #000000 100%);
+            color: white;
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            margin: 0;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .score { font-size: 50px; font-weight: 900; margin-bottom: 20px; color: #f39c12; text-shadow: 0 0 20px rgba(243, 156, 18, 0.5); }
         
-        /* Управление количеством */
-        .controls { display: flex; align-items: center; gap: 15px; margin-top: 10px; }
-        .btn-math { background: var(--accent); color: white; border: none; width: 35px; height: 35px; border-radius: 10px; font-size: 20px; font-weight: bold; }
-        .count { font-size: 18px; font-weight: bold; min-width: 20px; text-align: center; }
+        /* Главная монета (товар) */
+        .coin-container { position: relative; width: 250px; height: 250px; cursor: pointer; transition: transform 0.1s; }
+        .coin-container:active { transform: scale(0.95); }
+        .coin { width: 100%; height: 100%; border-radius: 50%; background: url('1.jpg') center/cover; border: 8px solid #f39c12; box-shadow: 0 0 50px rgba(243, 156, 18, 0.3); display: flex; align-items: center; justify-content: center; font-size: 80px; }
 
-        /* Нижняя панель (Корзина) */
-        .footer { position: fixed; bottom: 0; left: 0; right: 0; background: #1a1a1a; padding: 20px; border-top: 1px solid #333; transform: translateY(100%); transition: 0.5s; }
-        .footer.show { transform: translateY(0); }
-        .order-btn { background: var(--accent); color: white; border: none; width: 100%; padding: 15px; border-radius: 15px; font-size: 18px; font-weight: bold; }
+        /* Летающий текст +1 */
+        .tap-text { position: absolute; color: #f39c12; font-size: 30px; font-weight: bold; animation: flyUp 1s forwards; pointer-events: none; }
+        @keyframes flyUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-200px); } }
+
+        .footer { position: fixed; bottom: 50px; width: 100%; font-size: 18px; opacity: 0.7; }
+        .energy-bar { width: 80%; height: 10px; background: #333; border-radius: 5px; margin: 10px auto; overflow: hidden; }
+        .energy-fill { width: 100%; height: 100%; background: #f39c12; transition: 0.3s; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <h2 style="margin:0;">TV GLOBAL MARKET</h2>
-</div>
-
-<div class="container" id="list">
+    <div class="score" id="score">0</div>
+    
+    <div class="coin-container" onclick="handleTap(event)">
+        <div class="coin" id="coin-img">🥖</div>
     </div>
 
-<div class="footer" id="footer">
-    <button class="order-btn" onclick="finishOrder()">ОФОРМИТЬ: <span id="total">0</span> сум</button>
-</div>
+    <div class="footer">
+        <div>⚡ <span id="energy">1000</span> / 1000</div>
+        <div class="energy-bar"><div class="energy-fill" id="energy-fill"></div></div>
+    </div>
 
 <script>
     let tg = window.Telegram.WebApp;
     tg.expand();
+    tg.headerColor = '#000000';
 
-    const items = [
-        { id: 1, name: 'Лепёшка', price: 1500, icon: '🥖' },
-        { id: 2, name: 'Молоко', price: 4500, icon: '🥛' },
-        { id: 3, name: 'Рис Лазер', price: 16000, icon: '🍚' },
-        { id: 4, name: 'Масло 1л', price: 13500, icon: '🌻' },
-        { id: 5, name: 'Яйца 10шт', price: 9000, icon: '🥚' }
-    ];
+    let count = 0;
+    let energy = 1000;
 
-    let cart = {};
+    function handleTap(event) {
+        if (energy <= 0) return;
 
-    function draw() {
-        let html = '';
-        items.forEach(item => {
-            let count = cart[item.id] || 0;
-            html += `
-            <div class="card">
-                <div class="img-box"><img src="${item.id}.jpg" onerror="this.style.display='none'">${item.icon}</div>
-                <div class="info">
-                    <h3>${item.name}</h3>
-                    <div class="price">${item.price} сум</div>
-                    <div class="controls">
-                        <button class="btn-math" onclick="change(${item.id}, -1)">-</button>
-                        <span class="count">${count}</span>
-                        <button class="btn-math" onclick="change(${item.id}, 1)">+</button>
-                    </div>
-                </div>
-            </div>`;
-        });
-        document.getElementById('list').innerHTML = html;
-        updateFooter();
-    }
+        // 1. Увеличиваем счет
+        count++;
+        energy -= 5;
+        document.getElementById('score').innerText = count;
+        document.getElementById('energy').innerText = energy;
+        document.getElementById('energy-fill').style.width = (energy/10) + '%';
 
-    function change(id, val) {
-        cart[id] = (cart[id] || 0) + val;
-        if (cart[id] <= 0) delete cart[id];
+        // 2. Вибрация как в Notcoin
         tg.HapticFeedback.impactOccurred('medium');
-        draw();
-    }
 
-    function updateFooter() {
-        let sum = 0;
-        let has = false;
-        for (let id in cart) {
-            let item = items.find(i => i.id == id);
-            sum += item.price * cart[id];
-            has = true;
+        // 3. Создаем эффект "+1" в месте клика
+        const text = document.createElement('div');
+        text.className = 'tap-text';
+        text.innerText = '+1';
+        text.style.left = event.clientX - 20 + 'px';
+        text.style.top = event.clientY - 50 + 'px';
+        document.body.appendChild(text);
+
+        // Удаляем текст через секунду
+        setTimeout(() => text.remove(), 1000);
+
+        // 4. Отправляем данные боту (но НЕ закрываем приложение)
+        // В Notcoin данные копятся и отправляются пачками.
+        if (count % 10 === 0) {
+            // Можно отправить "промежуточный" результат
+            console.log("Отправка данных на сервер...");
         }
-        let f = document.getElementById('footer');
-        if (has) f.classList.add('show'); else f.classList.remove('show');
-        document.getElementById('total').innerText = sum.toLocaleString();
     }
-
-    function finishOrder() {
-        let msg = "НОВЫЙ ЗАКАЗ:\n----------\n";
-        for (let id in cart) {
-            let item = items.find(i => i.id == id);
-            msg += `${item.name} x${cart[id]}\n`;
-        }
-        tg.sendData(msg);
-        tg.close();
-    }
-
-    draw();
 </script>
 </body>
 </html>
