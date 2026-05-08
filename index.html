@@ -5,98 +5,100 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --accent: #ff9500; --tg-bg: var(--tg-theme-bg-color, #ffffff); }
-        body { font-family: -apple-system, sans-serif; background: var(--tg-theme-secondary-bg-color, #f0f0f2); margin: 0; padding: 0; color: var(--tg-theme-text-color, #000); }
-        .header { background: #000; color: #fff; padding: 20px; text-align: center; border-radius: 0 0 20px 20px; sticky; top: 0; z-index: 10; }
+        :root { --accent: #ff9500; }
+        body { font-family: sans-serif; background: #121212; color: white; margin: 0; padding: 0; padding-bottom: 80px; }
+        .header { background: #000; padding: 20px; text-align: center; border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 100; }
         .container { padding: 15px; }
-        .card { background: var(--tg-bg); border-radius: 18px; padding: 12px; margin-bottom: 15px; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .img-box { width: 80px; height: 80px; border-radius: 12px; overflow: hidden; background: #eee; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 40px; }
+        .card { background: #1e1e1e; border-radius: 16px; padding: 12px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; border: 1px solid #333; }
+        .img-box { width: 80px; height: 80px; border-radius: 12px; background: #2a2a2a; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 35px; }
         .img-box img { width: 100%; height: 100%; object-fit: cover; }
         .info { flex: 1; }
         .info h3 { margin: 0; font-size: 16px; }
-        .stock { color: #ff3b30; font-size: 11px; font-weight: bold; margin-top: 4px; }
-        .price { font-size: 18px; font-weight: 800; color: #4cd964; }
-        button { background: var(--accent); color: white; border: none; padding: 10px 15px; border-radius: 12px; font-weight: bold; transition: 0.3s; min-width: 80px; }
-        button.ordered { background: #4cd964; }
+        .price { font-size: 18px; font-weight: bold; color: #4cd964; margin: 5px 0; }
+        .counter { display: flex; align-items: center; gap: 10px; }
+        .btn-count { background: #333; color: white; border: none; width: 30px; height: 30px; border-radius: 8px; font-weight: bold; }
+        
+        /* Кнопка заказа внизу */
+        .cart-footer { position: fixed; bottom: 0; left: 0; right: 0; background: #000; padding: 15px; border-top: 1px solid #333; display: none; }
+        .main-btn { background: var(--accent); color: white; border: none; width: 100%; padding: 15px; border-radius: 12px; font-size: 16px; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1 style="margin: 0; font-size: 20px;">TV DISCOUNT MARKET</h1>
+    <div class="header"><h3>TV DISCOUNT GLOBAL</h3></div>
+    
+    <div class="container" id="catalog">
+        </div>
+
+    <div class="cart-footer" id="cart-footer">
+        <button class="main-btn" onclick="sendOrder()">ЗАКАЗАТЬ: <span id="total">0</span> сум</button>
     </div>
 
-    <div class="container">
-        <div class="card">
-            <div class="img-box"><img src="1.jpg" onerror="this.src='🥖'"></div>
-            <div class="info">
-                <h3>Горячая Лепёшка</h3>
-                <div class="stock">Осталось: 8 шт.</div>
-                <div class="price">1 500 сум</div>
-            </div>
-            <button id="btn1" onclick="order('Лепёшка', 'btn1')">БРОНЬ</button>
-        </div>
+<script>
+    let tg = window.Telegram.WebApp;
+    tg.expand();
 
-        <div class="card">
-            <div class="img-box"><img src="2.jpg" onerror="this.src='🥛'"></div>
-            <div class="info">
-                <h3>Молоко Мусаффо</h3>
-                <div class="stock">Срок: до завтра</div>
-                <div class="price">4 500 сум</div>
-            </div>
-            <button id="btn2" onclick="order('Молоко', 'btn2')">БРОНЬ</button>
-        </div>
+    const products = [
+        { id: 1, name: 'Лепёшка', price: 1500, img: '1.jpg', icon: '🥖' },
+        { id: 2, name: 'Молоко', price: 4500, img: '2.jpg', icon: '🥛' },
+        { id: 3, name: 'Рис Лазер', price: 16000, img: '3.jpg', icon: '🍚' },
+        { id: 4, name: 'Масло 1л', price: 13500, img: '4.jpg', icon: '🌻' },
+        { id: 5, name: 'Яйца 10шт', price: 9000, img: '5.jpg', icon: '🥚' }
+    ];
 
-        <div class="card">
-            <div class="img-box"><img src="3.jpg" onerror="this.src='🥚'"></div>
-            <div class="info">
-                <h3>Яйца (10 шт)</h3>
-                <div class="stock">Свежий привоз</div>
-                <div class="price">9 000 сум</div>
-            </div>
-            <button id="btn3" onclick="order('Яйца', 'btn3')">БРОНЬ</button>
-        </div>
+    let cart = {};
 
-        <div class="card">
-            <div class="img-box"><img src="4.jpg" onerror="this.src='🍚'"></div>
-            <div class="info">
-                <h3>Рис Лазер (1кг)</h3>
-                <div class="stock">Скидка дня</div>
-                <div class="price">16 000 сум</div>
-            </div>
-            <button id="btn4" onclick="order('Рис', 'btn4')">БРОНЬ</button>
-        </div>
+    function render() {
+        let html = '';
+        products.forEach(p => {
+            let count = cart[p.id] || 0;
+            html += `
+                <div class="card">
+                    <div class="img-box"><img src="${p.img}" onerror="this.style.display='none'">${p.icon}</div>
+                    <div class="info">
+                        <h3>${p.name}</h3>
+                        <div class="price">${p.price} сум</div>
+                        <div class="counter">
+                            <button class="btn-count" onclick="updateCart(${p.id}, -1)">-</button>
+                            <span>${count}</span>
+                            <button class="btn-count" onclick="updateCart(${p.id}, 1)">+</button>
+                        </div>
+                    </div>
+                </div>`;
+        });
+        document.getElementById('catalog').innerHTML = html;
+        updateFooter();
+    }
 
-        <div class="card">
-            <div class="img-box"><img src="5.jpg" onerror="this.src='🌻'"></div>
-            <div class="info">
-                <h3>Масло (1л)</h3>
-                <div class="stock">Осталось мало</div>
-                <div class="price">13 500 сум</div>
-            </div>
-            <button id="btn5" onclick="order('Масло', 'btn5')">БРОНЬ</button>
-        </div>
-    </div>
+    function updateCart(id, delta) {
+        cart[id] = (cart[id] || 0) + delta;
+        if (cart[id] <= 0) delete cart[id];
+        tg.HapticFeedback.impactOccurred('light');
+        render();
+    }
 
-    <script>
-        let tg = window.Telegram.WebApp;
-        tg.expand();
-
-        function order(name, btnId) {
-            let btn = document.getElementById(btnId);
-            
-            // 1. Визуальный отклик
-            btn.innerText = "ГОТОВО ✅";
-            btn.classList.add('ordered');
-            tg.HapticFeedback.notificationOccurred('success');
-
-            // 2. Отправка данных боту
-            tg.sendData("ЗАКАЗ: " + name);
-
-            // 3. Закрытие через паузу, чтобы клиент увидел галочку
-            setTimeout(() => {
-                tg.close();
-            }, 1200);
+    function updateFooter() {
+        let total = 0;
+        let hasItems = false;
+        for (let id in cart) {
+            let p = products.find(x => x.id == id);
+            total += p.price * cart[id];
+            hasItems = true;
         }
-    </script>
+        document.getElementById('cart-footer').style.display = hasItems ? 'block' : 'none';
+        document.getElementById('total').innerText = total.toLocaleString();
+    }
+
+    function sendOrder() {
+        let text = "НОВЫЙ ЗАКАЗ:\n";
+        for (let id in cart) {
+            let p = products.find(x => x.id == id);
+            text += `${p.name} x${cart[id]}\n`;
+        }
+        tg.sendData(text);
+        tg.close();
+    }
+
+    render();
+</script>
 </body>
 </html>
